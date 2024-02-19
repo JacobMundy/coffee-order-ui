@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Order</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<body>
+    <div id="headerContainer">
+        <div class="header" style="width:200px;">
+            <h2>
+                <a href="index.html" id="noStyle">
+                    Coffee Order System
+                </a>
+            </h2>
+        </div>
+        <div class="header" float="right">
+            <a>Order Status</a>
+        </div>
+    </div>
+    <div id="orderHolder">
+
+
+        <div class="OrderContainer" id="beverage">
+            <button id="Dark Roast" onclick="addBeverage()">Dark Roast</button>
+            <button id="Espresso" onclick="addBeverage()">Espresso</button>
+            <button id="House Blend" onclick="addBeverage()">House Blend</button>
+            <button id="Decaf" onclick="addBeverage()">Decaf</button>
+        </div>
+        <div class="OrderContainer" id="condiment" style="visibility: hidden;">
+            <button id="milk" onclick="addCondiment()">Milk</button>
+            <button id="soy" onclick="addCondiment()">Soy</button>
+            <button id="mocha" onclick="addCondiment()">Mocha</button>
+            <button id="whip" onclick="addCondiment()">Whip</button>
+        </div>
+        <div class="orderContainer" id="receiptContainer">
+
+        </div>
+    </div>
+    <div id="myOrder">
+        <h1> My Order</h1>
+        <h2>Beverage</h2>
+        <h3 id="beverageOrder" onclick="window.location.href='order.html'"></h3>
+        <h2>Condiments</h2>
+        <ul id="condimentOrder">
+        </ul>
+        <button id="placeOrder" onclick="placeOrder()">Place Order</button>
+    </div>
+    <script>
+        let drink = "";
+        let condiments = [];
+        function addBeverage() {
+            var beverage = document.getElementById("beverage");
+            var condiment = document.getElementById("condiment");
+            beverage.style.visibility = "hidden";
+            var beverage = event.target.id;
+            var order = document.getElementById("beverageOrder");
+            order.innerHTML = beverage;
+            condiment.style.visibility = "visible";
+            condiment.style.display = "block";
+            drink = beverage;
+        }
+        function addCondiment() {
+            if (document.getElementById("condimentOrder").children.length === 4) {
+                alert("You can only add 4 condiments");
+                return;
+            }
+            var condiment = event.target.id;
+            var order = document.getElementById("condimentOrder");
+            condiments.push(condiment);
+            order.innerHTML += '<li onclick="removeCondiment()"><h3>' + condiment + "</h3></li>";
+
+        }
+        function removeCondiment() {
+            var condiment = event.target;
+            var list = document.getElementById("condimentOrder");
+            for (var i = 0; i < list.children.length; i++) {
+                if (list.children[i].innerHTML.replace("<h3>", "").replace("</h3>", "") === condiment.innerHTML.replace("<h3>", "").replace("</h3>", "")) {
+                    list.removeChild(list.children[i]);
+                    condiments.splice(i, 1);
+                    return;
+                }
+            }
+        }
+        async function placeOrder() {
+            let host = "http://localhost:8080";
+            let drinkRequest = { beverage: drink, condiments: condiments };
+            console.log(JSON.stringify(drinkRequest));
+            let request = {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(drinkRequest)
+            };
+            let response = await fetch(host + "/orders", request);
+            console.log(response);
+            let data = await response.json();
+            if (response.status !== 201) {
+                alert("Something went wrong. Please try again or contact the customer support team.");
+                return;
+            }
+
+            let orderWindow = document.getElementById("myOrder");
+            let condimentWindow = document.getElementById("condiment");
+            orderWindow.style.visibility = "hidden";
+            condimentWindow.style.visibility = "hidden";
+            let receipt = document.getElementById("receiptContainer");
+            receipt.innerHTML = "<h1>Order Details</h1><h2>Description: " + data.description + "<h2>Order Id: " + data.id + "</h2><h2>Cost: $" + data.cost.toFixed(2) + "</h2>";
+        }
+
+    </script>
+</body>
+
+</html>
