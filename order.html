@@ -83,8 +83,9 @@
                 }
             }
         }
+        
         async function placeOrder() {
-            let host = "http://localhost:8080";
+            let host = "https://jacobmundy-coffee-order-latest.onrender.com";
             let drinkRequest = { beverage: drink, condiments: condiments };
             console.log(JSON.stringify(drinkRequest));
             let request = {
